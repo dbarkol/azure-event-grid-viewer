@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Azure Event Grid Viewer";
+}
+
+<h1>Azure Event Grid Viewer</h1>
+
+<div>
+    <a href="#" id="clear-events">clear</a>
+</div>
+
+<hr />
+<div id="events-container"></div>
+
+
+@section scripts {
+
+    <script src="~/lib/signalr.min.js" type="text/javascript"></script>
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    <script type="text/javascript">
+
+        var hubConnection;
+        var clearEvents;
+        var events;
+               
+        var clear = function(){
+            console.log('clear');
+            events.innerHTML = '';
+        }
+
+        var addEvent = function(header, data){
+                console.log('gridupdate method invoked');
+                var eventElement = document.createElement('pre');
+                eventElement.className += "prettyprint lang-js";
+                eventElement.innerHTML = data;
+                events.insertBefore(eventElement, events.childNodes[0]);  
+
+
+                //var test = $('<pre class="prettyprint lang-js">' + data + '</pre>').hide();
+                //$("#events-container").prepend(test);
+                //test.fadeIn(500);
+        }
+    
+        var initialize = function(){
+            // get dom elements and register listeners
+            clearEvents = document.getElementById('clear-events');
+            events = document.getElementById('events-container');
+            clearEvents.addEventListener('click', function(){
+               clear();
+            });
+    
+            // initialize and start the hub connection
+            hubConnection = new signalR.HubConnection('hubs/gridevents');
+            hubConnection.start().then(function(){
+                console.log('connection started');
+            });
+
+            // handle update from hub
+            hubConnection.on('gridupdate', function(header, data){
+                addEvent(header, data);
+            });
+        };  
+
+    
+        $(document).ready(function(){            
+            initialize();
+        });        
+    
+    </script>
+
+}
