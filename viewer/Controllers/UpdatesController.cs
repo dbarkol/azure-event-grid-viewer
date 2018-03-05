@@ -70,9 +70,17 @@ namespace viewer.Controllers
                     {
                         // Invoke a method on the clients for 
                         // an event grid notiification.
+
+                        var details = JsonConvert.DeserializeObject<GridEvent<dynamic>>(e.ToString());
+
+                        // id, eventType, subject, eventTime, data
+
                         await this.HubContext.Clients.All.SendAsync(
                             "gridupdate", 
-                            DateTime.Now.ToLongTimeString(), 
+                            details.Id,
+                            details.EventType,
+                            details.Subject,
+                            details.EventTime.ToLongTimeString(),
                             e.ToString());
                     }
 
