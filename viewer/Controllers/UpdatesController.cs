@@ -18,6 +18,8 @@ namespace viewer.Controllers
     [Route("api/[controller]")]
     public class UpdatesController : Controller
     {        
+        #region Data Members
+
         private bool EventTypeSubcriptionValidation
             => HttpContext.Request.Headers["aeg-event-type"].FirstOrDefault() ==
                "SubscriptionValidation";
@@ -27,6 +29,9 @@ namespace viewer.Controllers
                "Notification";
 
         private IHubContext<GridEventsHub> HubContext;
+
+        #endregion
+
 
         public UpdatesController(IHubContext<GridEventsHub> gridEventsHubContext)
         {
@@ -70,11 +75,7 @@ namespace viewer.Controllers
                     {
                         // Invoke a method on the clients for 
                         // an event grid notiification.
-
                         var details = JsonConvert.DeserializeObject<GridEvent<dynamic>>(e.ToString());
-
-                        // id, eventType, subject, eventTime, data
-
                         await this.HubContext.Clients.All.SendAsync(
                             "gridupdate", 
                             details.Id,
