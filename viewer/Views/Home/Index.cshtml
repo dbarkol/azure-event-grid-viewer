@@ -2,13 +2,19 @@
     ViewData["Title"] = "Azure Event Grid Viewer";
 }
 
-<h1>
-    <img src="~/images/eventgrid.png" height="47" width="90" alt="Azure Event Grid" />
-    Azure Event Grid Viewer
-</h1>
-
-<!--<div><a href="#" id="clear-events">clear</a></div>-->
-<hr />
+<div>    
+    <p style="float: left; font-size: 24px;" class="lead">
+        <img src="~/images/eventgrid.png" height="47" width="90" alt="Azure Event Grid" />
+        <strong>Azure Event Grid Viewer</strong>
+    </p>
+    <p style="float: right;">
+        <button class="btn btn-primary btn-xs" id="clear-events">
+            <span class="glyphicon glyphicon-trash"></span>
+        </button>
+    </p>
+</div>
+<div style="clear: both;"></div>
+<hr /><br /><br />
 
 <table id="grid-events" class="table table-striped">
   <thead>
@@ -31,15 +37,13 @@
   <tr class="hiddenRow collapse" id="event-{{gridEventId}}">
         <td colspan="12" >
             <div class="accordian-body">
-                <pre class="prettyprint lang-js">
+                <pre class="prettyprint">
                     {{gridEvent}}
                 </pre>
             </div>
    	    </td>
     </tr>  
 </script>
-
-<div id="events-container"></div>
 
 @section scripts {
     <script src="~/lib/signalr.min.js" type="text/javascript"></script>
@@ -51,11 +55,12 @@
         var clearEvents;
         var events;
         var eventsTable;
+        var gridEvents;
                
         var clear = function(){
             console.log('clear');
-            //events.innerHTML = '';
             $("#grid-events").find("tr:gt(0)").remove();
+            $("#grid-events").hide();
         }
 
         var addEvent = function(id, eventType, subject, eventTime, data){                
@@ -67,15 +72,18 @@
                 };                
                 var source = document.getElementById('event-template').innerHTML;
                 var template = Handlebars.compile(source);    
-                var html = template(context);                
+                var html = template(context);               
+
+                $("#grid-events").show(); 
                 $('#grid-event-details').prepend(html);             
         }
     
-        var initialize = function(){            
-            clearEvents = document.getElementById('clear-events');            
-            //clearEvents.addEventListener('click', function(){
-               //clear();
-            //});
+        var initialize = function(){    
+            $("#grid-events").hide();        
+            clearEvents = document.getElementById('clear-events');                      
+            clearEvents.addEventListener('click', function(){
+               clear();
+            });
                 
             hubConnection = new signalR.HubConnection('hubs/gridevents');
             hubConnection.start().then(function(){
