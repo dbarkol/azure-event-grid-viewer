@@ -18,8 +18,6 @@ namespace viewer.Controllers
     [Route("api/[controller]")]
     public class UpdatesController : Controller
     {        
-        #region Data Members
-
         private bool EventTypeSubcriptionValidation
             => HttpContext.Request.Headers["aeg-event-type"].FirstOrDefault() ==
                "SubscriptionValidation";
@@ -29,9 +27,6 @@ namespace viewer.Controllers
                "Notification";
 
         private IHubContext<GridEventsHub> HubContext;
-
-        #endregion
-
 
         public UpdatesController(IHubContext<GridEventsHub> gridEventsHubContext)
         {
