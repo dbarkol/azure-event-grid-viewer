@@ -34,7 +34,7 @@ namespace viewer.Controllers
         }
 
         [HttpPost]
-        public async Task<HttpResponseMessage> Post()
+        public async Task<ContentResult> Post()
         {
             using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
             {
@@ -49,6 +49,14 @@ namespace viewer.Controllers
                         JsonConvert.DeserializeObject<List<GridEvent<Dictionary<string, string>>>>(jsonContent)
                             .First();
 
+                    await this.HubContext.Clients.All.SendAsync(
+                        "gridupdate", 
+                        gridEvent.Id,
+                        gridEvent.EventType,
+                        gridEvent.Subject,
+                        gridEvent.EventTime.ToLongTimeString(),
+                        jsonContent.ToString());
+
                     // Retrieve the validation code and echo back.
                     var validationCode = gridEvent.Data["validationCode"];
                     var validationResponse =
@@ -57,11 +65,8 @@ namespace viewer.Controllers
                             validationResponse =
                             validationCode
                         });
-                    return new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new StringContent(validationResponse)
-                    };
+
+                    return Content(validationResponse);                 
                 }
                 else if (EventTypeNotification)
                 {
@@ -80,12 +85,15 @@ namespace viewer.Controllers
                             e.ToString());
                     }
 
-                    return new HttpResponseMessage { StatusCode = HttpStatusCode.OK };
+                    return Content("");                  
                 }
                 else
                 {
-            
-                    return new HttpResponseMessage { StatusCode = HttpStatusCode.BadRequest };
+                    return new ContentResult{
+                        StatusCode = 400,
+                        Content = "Bad request",
+                        ContentType = "text/plain"
+                    };                    
                 }
             }
 
