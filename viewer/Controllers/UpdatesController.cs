@@ -34,7 +34,7 @@ namespace viewer.Controllers
         }
 
         [HttpPost]
-        public async Task<ContentResult> Post()
+        public async Task<IActionResult> Post()
         {
             using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
             {
@@ -59,14 +59,9 @@ namespace viewer.Controllers
 
                     // Retrieve the validation code and echo back.
                     var validationCode = gridEvent.Data["validationCode"];
-                    var validationResponse =
-                        JsonConvert.SerializeObject(new
-                        {
-                            validationResponse =
-                            validationCode
-                        });
-
-                    return Content(validationResponse);                 
+                    return new JsonResult(new{ 
+                        validationResponse = validationCode
+                    });
                 }
                 else if (EventTypeNotification)
                 {
@@ -85,15 +80,11 @@ namespace viewer.Controllers
                             e.ToString());
                     }
 
-                    return Content("");                  
+                    return Ok();                 
                 }
                 else
                 {
-                    return new ContentResult{
-                        StatusCode = 400,
-                        Content = "Bad request",
-                        ContentType = "text/plain"
-                    };                    
+                    return BadRequest();
                 }
             }
 
