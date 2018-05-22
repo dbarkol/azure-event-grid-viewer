@@ -3,6 +3,9 @@
 # What is it?
 This repository contains the source code for a site that displays events from Azure Event Grid in near-real time. It is built on ASP.NET Core 2.1 and leverages SignalR to display incoming messages.
 
+For details about how it was put together, please refer to the accompanying blog post: 
+https://madeofstrings.com/2018/03/14/azure-event-grid-viewer-with-asp-net-core-and-signalr/
+
 # Deploy the solution
 
 ## 1. Select Deploy to Azure
@@ -25,10 +28,8 @@ Launch the site to ensure that it is running. Make note of the address for the n
 
 ## 4. Register the endpoint as an event subscription
 
-The event subscription endpoint will be the site address with the following suffix: /api/updates.
+The event subscription endpoint will be the address with the following suffix: */api/updates*.
 
 Example: https://{{site-name}}.azurewebsites.net/api/updates
 
-## Blog reference
 
-https://madeofstrings.com/2018/03/14/azure-event-grid-viewer-with-asp-net-core-and-signalr/
