@@ -27,7 +27,9 @@ Launch the site to ensure that it is running. Make note of the address for the n
 
 ## 4. Register the endpoint as an event subscription
 
-The event subscription endpoint will be the address with the following suffix: */api/updates*. For example: https://{{site-name}}.azurewebsites.net/api/updates
+The event subscription endpoint will be the address with the following suffix: */api/updates*. 
+
+For example: https://{{site-name}}.azurewebsites.net/api/updates
 
 Routing events to a custom endpoint: https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-event-quickstart?toc=%2fazure%2fevent-grid%2ftoc.json
 
