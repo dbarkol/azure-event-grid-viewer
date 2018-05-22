@@ -31,6 +31,8 @@ The event subscription endpoint will be the address with the following suffix: *
 
 For example: https://{{site-name}}.azurewebsites.net/api/updates
 
+## 5. References
+
 Routing events to a custom endpoint: https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-event-quickstart?toc=%2fazure%2fevent-grid%2ftoc.json
 
 
