@@ -17,7 +17,9 @@ namespace viewer.Controllers
 {
     [Route("api/[controller]")]
     public class UpdatesController : Controller
-    {        
+    {
+        #region Data Members
+
         private bool EventTypeSubcriptionValidation
             => HttpContext.Request.Headers["aeg-event-type"].FirstOrDefault() ==
                "SubscriptionValidation";
@@ -26,12 +28,20 @@ namespace viewer.Controllers
             => HttpContext.Request.Headers["aeg-event-type"].FirstOrDefault() ==
                "Notification";
 
-        private IHubContext<GridEventsHub> HubContext;
+        private readonly IHubContext<GridEventsHub> _hubContext;
+
+        #endregion
+
+        #region Constructors
 
         public UpdatesController(IHubContext<GridEventsHub> gridEventsHubContext)
         {
-            this.HubContext = gridEventsHubContext;
+            this._hubContext = gridEventsHubContext;
         }
+
+        #endregion
+
+        #region Public Methods
 
         [HttpPost]
         public async Task<IActionResult> Post()
@@ -45,50 +55,110 @@ namespace viewer.Controllers
                 // a subscription validation request. 
                 if (EventTypeSubcriptionValidation)
                 {
-                    var gridEvent =
-                        JsonConvert.DeserializeObject<List<GridEvent<Dictionary<string, string>>>>(jsonContent)
-                            .First();
-
-                    await this.HubContext.Clients.All.SendAsync(
-                        "gridupdate", 
-                        gridEvent.Id,
-                        gridEvent.EventType,
-                        gridEvent.Subject,
-                        gridEvent.EventTime.ToLongTimeString(),
-                        jsonContent.ToString());
-
-                    // Retrieve the validation code and echo back.
-                    var validationCode = gridEvent.Data["validationCode"];
-                    return new JsonResult(new{ 
-                        validationResponse = validationCode
-                    });
+                    return await HandleValidation(jsonContent);
                 }
                 else if (EventTypeNotification)
                 {
-                    var events = JArray.Parse(jsonContent);
-                    foreach (var e in events)
+                    // Check to see if this is passed in using
+                    // the CloudEvents schema
+                    if (IsCloudEvent(jsonContent))
                     {
-                        // Invoke a method on the clients for 
-                        // an event grid notiification.                        
-                        var details = JsonConvert.DeserializeObject<GridEvent<dynamic>>(e.ToString());                        
-                        await this.HubContext.Clients.All.SendAsync(
-                            "gridupdate", 
-                            details.Id,
-                            details.EventType,
-                            details.Subject,
-                            details.EventTime.ToLongTimeString(),
-                            e.ToString());
+                        return await HandleCloudEvent(jsonContent);
                     }
 
-                    return Ok();                 
+                    return await HandleGridEvents(jsonContent);
                 }
-                else
-                {
-                    return BadRequest();
-                }
-            }
 
+                return BadRequest();                
+            }
         }
 
+        #endregion
+
+        #region Private Methods
+
+        private async Task<JsonResult> HandleValidation(string jsonContent)
+        {
+            var gridEvent =
+                JsonConvert.DeserializeObject<List<GridEvent<Dictionary<string, string>>>>(jsonContent)
+                    .First();
+
+            await this._hubContext.Clients.All.SendAsync(
+                "gridupdate",
+                gridEvent.Id,
+                gridEvent.EventType,
+                gridEvent.Subject,
+                gridEvent.EventTime.ToLongTimeString(),
+                jsonContent.ToString());
+
+            // Retrieve the validation code and echo back.
+            var validationCode = gridEvent.Data["validationCode"];
+            return new JsonResult(new
+            {
+                validationResponse = validationCode
+            });
+        }
+
+        private async Task<IActionResult> HandleGridEvents(string jsonContent)
+        {
+            var events = JArray.Parse(jsonContent);
+            foreach (var e in events)
+            {
+                // Invoke a method on the clients for 
+                // an event grid notiification.                        
+                var details = JsonConvert.DeserializeObject<GridEvent<dynamic>>(e.ToString());
+                await this._hubContext.Clients.All.SendAsync(
+                    "gridupdate",
+                    details.Id,
+                    details.EventType,
+                    details.Subject,
+                    details.EventTime.ToLongTimeString(),
+                    e.ToString());
+            }
+
+            return Ok();
+        }
+
+        private async Task<IActionResult> HandleCloudEvent(string jsonContent)
+        {
+            var details = JsonConvert.DeserializeObject<CloudEvent<dynamic>>(jsonContent);
+
+            // CloudEvents schema and mapping to 
+            // Event Grid: https://docs.microsoft.com/en-us/azure/event-grid/cloudevents-schema 
+            await this._hubContext.Clients.All.SendAsync(
+                "gridupdate",
+                details.EventId,
+                details.EventType,
+                details.Source,
+                details.EventTime,
+                jsonContent
+            );
+
+            return Ok();
+        }
+
+        private static bool IsCloudEvent(string jsonContent)
+        {
+            // Cloud events are sent one at a time, while Grid events
+            // are sent in an array. As a result, the JObject.Parse will 
+            // fail for Grid events. 
+            try
+            {
+                // Attempt to read one JSON object. 
+                var eventData = JObject.Parse(jsonContent);
+
+                // Check for the cloud events version property.
+                var version = eventData["cloudEventsVersion"].Value<string>();
+                if (!string.IsNullOrEmpty(version)) return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
+            return false;
+        }
+
+        #endregion
     }
 }
