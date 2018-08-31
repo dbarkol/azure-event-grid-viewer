@@ -1,11 +1,17 @@
 # *Azure Event Grid Viewer*
 
+## Update (8-30-2018) 
+This solution has been migrated to https://github.com/Azure-Samples/azure-event-grid-viewer.
+
+
+## Overview
 This repository contains the source code for a site that displays events from Azure Event Grid in near-real time. It is built on ASP.NET Core 2.1 and leverages SignalR to display incoming messages.
 
 For details about how it was put together, please refer to the accompanying blog post: 
 https://madeofstrings.com/2018/03/14/azure-event-grid-viewer-with-asp-net-core-and-signalr/
 
-# Deploy the solution
+
+## Deploy the solution
 
 ## 1. Select Deploy to Azure
 
