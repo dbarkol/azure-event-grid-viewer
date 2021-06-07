@@ -29,14 +29,14 @@
         "description": "The pricing tier for the hosting plan."
       }
     },
-    "identity": {
-      "type": "string",
-      "defaultValue": "None",
-      "allowedValues": [
-        "None",
-        "SystemAssigned"
-      ]
-    },
+    //"identity": {
+    //  "type": "string",
+    //  "defaultValue": "None",
+    //  "allowedValues": [
+    //    "None",
+    //    "SystemAssigned"
+    //  ]
+    //},
     "repoURL": {
       "type": "string",
       "defaultValue": "https://github.com/dbarkol/azure-event-grid-viewer.git",
