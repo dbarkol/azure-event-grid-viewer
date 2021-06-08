@@ -77,9 +77,9 @@
         "apiVersion": "2015-08-01",
         "name": "[parameters('siteName')]",
         "type": "Microsoft.Web/sites",
-        "identity": {
-          "type": "[parameters('identity')]"
-        },
+        //"identity": {
+        //  "type": "[parameters('identity')]"
+        //},
         "location": "[parameters('location')]",
         "dependsOn": [
           "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
