@@ -78,7 +78,7 @@
         "name": "[parameters('siteName')]",
         "type": "Microsoft.Web/sites",
         "identity": {
-          "type": "SystemAssigned"
+          "type": "None"
         },
         "location": "[parameters('location')]",
         "dependsOn": [
